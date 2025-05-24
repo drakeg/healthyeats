@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,6 +6,13 @@ import RecipeConverter from "./RecipeConverter";
 import { motion } from "framer-motion";
 
 const Home = () => {
+  const [isPremiumUser, setIsPremiumUser] = useState(false);
+
+  const handleSaveRecipe = (originalRecipe: any, modifiedRecipe: any) => {
+    // Handle saving the recipe
+    console.log('Saving recipe:', { originalRecipe, modifiedRecipe });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
       {/* Header */}
@@ -114,7 +121,10 @@ const Home = () => {
           <h2 className="text-2xl font-bold mb-6 text-center">
             Convert Your Recipe
           </h2>
-          <RecipeConverter />
+          <RecipeConverter 
+            onSaveRecipe={handleSaveRecipe}
+            isPremiumUser={isPremiumUser}
+          />
         </div>
       </section>
 

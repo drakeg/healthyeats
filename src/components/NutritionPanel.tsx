@@ -1,14 +1,22 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
 interface NutritionInfo {
   calories: number;
   protein: number;
   carbs: number;
   fat: number;
+  fiber: number;
+  sugar: number;
+  sodium: number;
+  cholesterol: number;
+  vitaminC: number;
+  calcium: number;
+  iron: number;
+  potassium: number;
 }
 
 interface NutritionPanelProps {
@@ -18,16 +26,32 @@ interface NutritionPanelProps {
 
 const NutritionPanel = ({
   originalNutrition = {
-    calories: 450,
-    protein: 15,
-    carbs: 55,
-    fat: 20,
+    calories: 200,
+    protein: 1,
+    carbs: 23,
+    fat: 12,
+    fiber: 1,
+    sugar: 15,
+    sodium: 253,
+    cholesterol: 11,
+    vitaminC: 19,
+    calcium: 29,
+    iron: 0,
+    potassium: 108
   },
   modifiedNutrition = {
-    calories: 350,
-    protein: 20,
-    carbs: 40,
-    fat: 12,
+    calories: 160,
+    protein: 3,
+    carbs: 18,
+    fat: 8,
+    fiber: 2,
+    sugar: 8,
+    sodium: 180,
+    cholesterol: 5,
+    vitaminC: 22,
+    calcium: 35,
+    iron: 0.5,
+    potassium: 120
   },
 }: NutritionPanelProps) => {
   // Calculate percentage differences
@@ -36,32 +60,56 @@ const NutritionPanel = ({
     return diff.toFixed(1);
   };
 
-  const caloriesDiff = calculateDifference(
-    originalNutrition.calories,
-    modifiedNutrition.calories,
-  );
-  const proteinDiff = calculateDifference(
-    originalNutrition.protein,
-    modifiedNutrition.protein,
-  );
-  const carbsDiff = calculateDifference(
-    originalNutrition.carbs,
-    modifiedNutrition.carbs,
-  );
-  const fatDiff = calculateDifference(
-    originalNutrition.fat,
-    modifiedNutrition.fat,
-  );
-
   // Helper function to determine badge color based on nutritional value change
-  const getBadgeVariant = (diff: number) => {
-    if (diff > 0) {
-      // For protein, increase is good
-      return diff > 0 && diff < 100 ? "secondary" : "default";
-    } else {
-      // For calories, carbs, fat - decrease is good
-      return diff < 0 ? "default" : "destructive";
+  const getBadgeVariant = (nutrient: string, diff: number) => {
+    if (nutrient === 'protein' || nutrient === 'fiber' || nutrient === 'vitaminC' || 
+        nutrient === 'calcium' || nutrient === 'iron' || nutrient === 'potassium') {
+      return diff > 0 ? 'default' : 'destructive';
+    } else if (nutrient === 'calories' || nutrient === 'carbs' || nutrient === 'fat' || 
+               nutrient === 'sugar' || nutrient === 'sodium' || nutrient === 'cholesterol') {
+      return diff < 0 ? 'default' : 'destructive';
     }
+    return 'secondary';
+  };
+
+  // Helper function to format nutrient values
+  const formatNutrient = (value: number, nutrient: string) => {
+    if (nutrient === 'calories') return `${value} kcal`;
+    if (nutrient === 'sodium') return `${value}mg`;
+    if (nutrient === 'cholesterol') return `${value}mg`;
+    if (nutrient === 'vitaminC') return `${value}mg`;
+    if (nutrient === 'calcium') return `${value}mg`;
+    if (nutrient === 'iron') return `${value}mg`;
+    if (nutrient === 'potassium') return `${value}mg`;
+    return `${value}g`;
+  };
+
+  const renderNutrientRow = (nutrient: string, label: string) => {
+    const original = originalNutrition[nutrient as keyof NutritionInfo] as number;
+    const modified = modifiedNutrition[nutrient as keyof NutritionInfo] as number;
+    const diff = calculateDifference(original, modified);
+    const isPositive = Number(diff) > 0;
+    const sign = isPositive ? '+' : '';
+
+    return (
+      <div key={nutrient}>
+        <div className="flex justify-between mb-1">
+          <span className="text-sm font-medium">{label}</span>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">
+              {formatNutrient(modified, nutrient)}
+            </span>
+            <Badge variant={getBadgeVariant(nutrient, Number(diff))}>
+              {sign}{diff}%
+            </Badge>
+          </div>
+        </div>
+        <Progress
+          value={(modified / original) * 100}
+          className="h-2 bg-gray-200"
+        />
+      </div>
+    );
   };
 
   return (
@@ -78,45 +126,30 @@ const NutritionPanel = ({
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-sm font-medium">Calories</span>
-                  <span className="text-sm font-medium">
-                    {originalNutrition.calories} kcal
-                  </span>
+              {Object.entries({
+                calories: 'Calories',
+                protein: 'Protein',
+                carbs: 'Total Carbohydrate',
+                fat: 'Total Fat',
+                fiber: 'Dietary Fiber',
+                sugar: 'Total Sugars',
+                sodium: 'Sodium',
+                cholesterol: 'Cholesterol',
+                vitaminC: 'Vitamin C',
+                calcium: 'Calcium',
+                iron: 'Iron',
+                potassium: 'Potassium'
+              }).map(([key, label]) => (
+                <div key={key}>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-sm font-medium">{label}</span>
+                    <span className="text-sm font-medium">
+                      {formatNutrient(originalNutrition[key as keyof NutritionInfo] as number, key)}
+                    </span>
+                  </div>
+                  <Progress value={100} className="h-2 bg-gray-200" />
                 </div>
-                <Progress value={100} className="h-2 bg-gray-200" />
-              </div>
-
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-sm font-medium">Protein</span>
-                  <span className="text-sm font-medium">
-                    {originalNutrition.protein}g
-                  </span>
-                </div>
-                <Progress value={100} className="h-2 bg-gray-200" />
-              </div>
-
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-sm font-medium">Carbs</span>
-                  <span className="text-sm font-medium">
-                    {originalNutrition.carbs}g
-                  </span>
-                </div>
-                <Progress value={100} className="h-2 bg-gray-200" />
-              </div>
-
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-sm font-medium">Fat</span>
-                  <span className="text-sm font-medium">
-                    {originalNutrition.fat}g
-                  </span>
-                </div>
-                <Progress value={100} className="h-2 bg-gray-200" />
-              </div>
+              ))}
             </div>
           </CardContent>
         </Card>
@@ -128,85 +161,20 @@ const NutritionPanel = ({
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-sm font-medium">Calories</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">
-                      {modifiedNutrition.calories} kcal
-                    </span>
-                    <Badge variant={getBadgeVariant(Number(caloriesDiff))}>
-                      {caloriesDiff}%
-                    </Badge>
-                  </div>
-                </div>
-                <Progress
-                  value={
-                    (modifiedNutrition.calories / originalNutrition.calories) *
-                    100
-                  }
-                  className="h-2 bg-gray-200"
-                />
-              </div>
-
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-sm font-medium">Protein</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">
-                      {modifiedNutrition.protein}g
-                    </span>
-                    <Badge variant={getBadgeVariant(Number(proteinDiff))}>
-                      {proteinDiff}%
-                    </Badge>
-                  </div>
-                </div>
-                <Progress
-                  value={
-                    (modifiedNutrition.protein / originalNutrition.protein) *
-                    100
-                  }
-                  className="h-2 bg-gray-200"
-                />
-              </div>
-
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-sm font-medium">Carbs</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">
-                      {modifiedNutrition.carbs}g
-                    </span>
-                    <Badge variant={getBadgeVariant(Number(carbsDiff))}>
-                      {carbsDiff}%
-                    </Badge>
-                  </div>
-                </div>
-                <Progress
-                  value={
-                    (modifiedNutrition.carbs / originalNutrition.carbs) * 100
-                  }
-                  className="h-2 bg-gray-200"
-                />
-              </div>
-
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-sm font-medium">Fat</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">
-                      {modifiedNutrition.fat}g
-                    </span>
-                    <Badge variant={getBadgeVariant(Number(fatDiff))}>
-                      {fatDiff}%
-                    </Badge>
-                  </div>
-                </div>
-                <Progress
-                  value={(modifiedNutrition.fat / originalNutrition.fat) * 100}
-                  className="h-2 bg-gray-200"
-                />
-              </div>
+              {Object.entries({
+                calories: 'Calories',
+                protein: 'Protein',
+                carbs: 'Total Carbohydrate',
+                fat: 'Total Fat',
+                fiber: 'Dietary Fiber',
+                sugar: 'Total Sugars',
+                sodium: 'Sodium',
+                cholesterol: 'Cholesterol',
+                vitaminC: 'Vitamin C',
+                calcium: 'Calcium',
+                iron: 'Iron',
+                potassium: 'Potassium'
+              }).map(([key, label]) => renderNutrientRow(key, label))}
             </div>
           </CardContent>
         </Card>
@@ -217,13 +185,13 @@ const NutritionPanel = ({
         <div className="text-center">
           <h3 className="text-lg font-semibold mb-2">Summary</h3>
           <p className="text-sm text-gray-600">
-            The modified recipe has {Math.abs(Number(caloriesDiff))}%{" "}
-            {Number(caloriesDiff) < 0 ? "fewer" : "more"} calories,
-            {Math.abs(Number(proteinDiff))}%{" "}
-            {Number(proteinDiff) > 0 ? "more" : "less"} protein,
-            {Math.abs(Number(carbsDiff))}%{" "}
-            {Number(carbsDiff) < 0 ? "fewer" : "more"} carbs, and
-            {Math.abs(Number(fatDiff))}% {Number(fatDiff) < 0 ? "less" : "more"}{" "}
+            The modified recipe has {Math.abs(Number(calculateDifference(originalNutrition.calories, modifiedNutrition.calories)))}%{" "}
+            {Number(calculateDifference(originalNutrition.calories, modifiedNutrition.calories)) < 0 ? "fewer" : "more"} calories,
+            {Math.abs(Number(calculateDifference(originalNutrition.protein, modifiedNutrition.protein)))}%{" "}
+            {Number(calculateDifference(originalNutrition.protein, modifiedNutrition.protein)) > 0 ? "more" : "less"} protein,
+            {Math.abs(Number(calculateDifference(originalNutrition.carbs, modifiedNutrition.carbs)))}%{" "}
+            {Number(calculateDifference(originalNutrition.carbs, modifiedNutrition.carbs)) < 0 ? "fewer" : "more"} carbs, and
+            {Math.abs(Number(calculateDifference(originalNutrition.fat, modifiedNutrition.fat)))}% {Number(calculateDifference(originalNutrition.fat, modifiedNutrition.fat)) < 0 ? "less" : "more"}{" "}
             fat than the original recipe.
           </p>
         </div>
