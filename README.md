@@ -1,5 +1,8 @@
 # React + TypeScript + Vite
 
+[![License](https://img.shields.io/github/license/drakeg/healthyeats)](https://github.com/drakeg/healthyeats/blob/main/LICENSE)
+
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:
